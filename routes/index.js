@@ -1,24 +1,28 @@
 var express = require('express');
 var router = express.Router();
-const db = require('../db');
+const { refreshOilPrices, db } = require('../oilPriceCrawler');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-// 刪除油價資料
-router.delete('/api/oil/:id', function(req, res) {
-  const id = req.params.id;
-  db.run('DELETE FROM oil_price WHERE id = ?', [id], function(err) {
-    if (err) {
-      res.status(500).send('刪除失敗: ' + err.message);
-    } else if (this.changes === 0) {
-      res.status(404).send('找不到該筆資料');
-    } else {
-      res.send('刪除成功');
-    }
+// 取得油價資料 API
+router.get('/api/oil-prices', function(req, res) {
+  db.all('SELECT * FROM prices ORDER BY date DESC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
   });
+});
+
+// 手動刷新油價 API
+router.post('/api/oil-prices/refresh', async function(req, res) {
+  try {
+    await refreshOilPrices();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
