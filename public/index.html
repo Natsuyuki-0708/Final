@@ -1,0 +1,341 @@
+<html>
+
+<head>
+  <title>歷史油價資料</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+      background: linear-gradient(120deg, #f0f4f9 0%, #e0e7ef 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    h1, h2 {
+      color: #2a3b4d;
+      text-align: center;
+      margin-top: 32px;
+    }
+    form {
+      background: #fff;
+      max-width: 400px;
+      margin: 24px auto 12px auto;
+      padding: 24px 32px 18px 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    label {
+      font-size: 1em;
+      color: #2a3b4d;
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="date"], input[type="number"] {
+      padding: 7px 10px;
+      border: 1px solid #bfc9d1;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-top: 2px;
+      background: #f7fafc;
+      transition: border 0.2s;
+    }
+    input:focus {
+      border: 1.5px solid #4a90e2;
+      outline: none;
+      background: #fff;
+    }
+    button {
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 0;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #357abd;
+    }
+    button.delete-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 7px 16px;
+      font-size: 1em;
+      font-weight: normal;
+      cursor: pointer;
+      margin: 0 2px;
+      transition: background 0.2s;
+    }
+    button.delete-btn:hover {
+      background: #c0392b;
+    }
+    #oilMsg {
+      text-align: center;
+      color: #357abd;
+      font-size: 1em;
+      min-height: 1.5em;
+    }
+    #oilTable {
+      border-collapse: collapse;
+      width: 90%;
+      margin: 30px auto 40px auto;
+      font-size: 1.1em;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #oilTable th, #oilTable td {
+      border: 1px solid #e0e7ef;
+      padding: 12px 18px;
+      text-align: center;
+    }
+    #oilTable th {
+      background: #eaf1fb;
+      color: #2a3b4d;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    #oilTable tr:nth-child(even) {
+      background: #f7fafc;
+    }
+    #oilTable tr:hover {
+      background: #e6f7ff;
+      transition: background 0.2s;
+    }
+    @media (max-width: 700px) {
+      #oilTable, #oilTable th, #oilTable td {
+        font-size: 0.95em;
+        padding: 7px 4px;
+      }
+      form {
+        padding: 16px 8px 10px 8px;
+      }
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.25);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-bg.active {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+      padding: 32px 36px 20px 36px;
+      min-width: 320px;
+      max-width: 95vw;
+      position: relative;
+      animation: modalIn 0.2s;
+    }
+    @keyframes modalIn {
+      from { transform: translateY(-30px) scale(0.98); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .modal-close {
+      position: absolute;
+      right: 18px;
+      top: 12px;
+      font-size: 1.5em;
+      color: #aaa;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: #4a90e2;
+    }
+    #openOilModalBtn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 32px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #openOilModalBtn:hover {
+      background: #357abd;
+    }
+    /* 下拉式選單美化 */
+    select, select:focus {
+      background: #f7fafc;
+      border: 1.5px solid #bfc9d1;
+      border-radius: 6px;
+      padding: 7px 16px 7px 10px;
+      font-size: 1.08em;
+      color: #2a3b4d;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px rgba(74,144,226,0.04);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+    select:focus {
+      border: 1.5px solid #4a90e2;
+      box-shadow: 0 0 0 2px #eaf1fb;
+      background: #fff;
+    }
+    /* 下拉箭頭美化（僅部分瀏覽器支援） */
+    select::-ms-expand {
+      display: none;
+    }
+    /* 產品名稱下拉選單區塊 */
+    #productFilter {
+      min-width: 160px;
+      max-width: 220px;
+      margin: 0 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>油價資料</h2>
+  <label style="display:block;text-align:center;margin-bottom:10px;">
+    產品名稱：
+    <select id="productFilter" style="font-size:1em;padding:4px 8px;">
+      <option value="">全部</option>
+      <option value="92 無鉛汽油">92 無鉛汽油</option>
+      <option value="95 無鉛汽油">95 無鉛汽油</option>
+      <option value="98 無鉛汽油">98 無鉛汽油</option>
+      <option value="超級/高級柴油">超級/高級柴油</option>
+    </select>
+  </label>
+  <button id="openOilModalBtn">新增油價資料</button>
+  <div class="modal-bg" id="oilModalBg">
+    <div class="modal">
+      <button class="modal-close" id="closeOilModalBtn">&times;</button>
+      <h2 style="margin-top:0;">新增油價資料</h2>
+      <form id="oilForm" onsubmit="return false;">
+        <label>調整日期(adjust_date): <input type="date" name="adjust_date" required></label><br>
+        <label>產品名稱(product_name):
+          <select name="product_name" required>
+            <option value="92 無鉛汽油">92 無鉛汽油</option>
+            <option value="95 無鉛汽油">95 無鉛汽油</option>
+            <option value="98 無鉛汽油">98 無鉛汽油</option>
+            <option value="超級/高級柴油">超級/高級柴油</option>
+          </select>
+        </label><br>
+        <label>價格(price): <input type="number" step="0.01" name="price" required></label><br>
+        <button type="submit">送出</button>
+      </form>
+      <p id="oilMsg"></p>
+    </div>
+  </div>
+  <table border="1" id="oilTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th id="adjustDateTh" style="cursor:pointer;user-select:none;">調整日期 <span id="sortIcon">▼</span></th>
+        <th>產品名稱</th>
+        <th>價格</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Modal 控制
+    const oilModalBg = document.getElementById('oilModalBg');
+    document.getElementById('openOilModalBtn').onclick = () => {
+      oilModalBg.classList.add('active');
+    };
+    document.getElementById('closeOilModalBtn').onclick = () => {
+      oilModalBg.classList.remove('active');
+      document.getElementById('oilMsg').innerText = '';
+    };
+    oilModalBg.onclick = function(e) {
+      if (e.target === oilModalBg) {
+        oilModalBg.classList.remove('active');
+        document.getElementById('oilMsg').innerText = '';
+      }
+    };
+    // 油價表單送出
+    document.getElementById('oilForm').addEventListener('submit', async function() {
+      const form = this;
+      const data = {
+        adjust_date: form.adjust_date.value,
+        product_name: form.product_name.value,
+        price: form.price.value
+      };
+      const res = await fetch('/api/oil/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const msg = await res.text();
+      document.getElementById('oilMsg').innerText = msg;
+      if (msg.includes('成功')) {
+        form.reset();
+        oilModalBg.classList.remove('active');
+        setTimeout(()=>{ document.getElementById('oilMsg').innerText = ''; }, 500);
+        loadOilPrices();
+      }
+    });
+
+    // 取得油價資料並顯示
+    let sortOrder = 'desc';
+    const sortIcon = document.getElementById('sortIcon');
+    const productFilter = document.getElementById('productFilter');
+    let currentProduct = '';
+    document.getElementById('adjustDateTh').onclick = function() {
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+      sortIcon.textContent = sortOrder === 'desc' ? '▼' : '▲';
+      loadOilPrices();
+    };
+    productFilter.onchange = function() {
+      currentProduct = this.value;
+      loadOilPrices();
+    };
+    async function loadOilPrices() {
+      let url = '/api/prices?order=' + sortOrder;
+      if(currentProduct) url += '&product_name=' + encodeURIComponent(currentProduct);
+      const res = await fetch(url);
+      const data = await res.json();
+      const tbody = document.querySelector('#oilTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.id}</td><td>${row.adjust_date}</td><td>${row.product_name}</td><td>${row.price}</td><td><button class="delete-btn" data-id="${row.id}">刪除</button></td>`;
+        tbody.appendChild(tr);
+      });
+      // 綁定刪除按鈕事件
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.onclick = async function() {
+          if(confirm('確定要刪除這筆資料嗎？')) {
+            const id = this.getAttribute('data-id');
+            const res = await fetch(`/api/oil/${id}`, { method: 'DELETE' });
+            const msg = await res.text();
+            alert(msg);
+            loadOilPrices();
+          }
+        };
+      });
+    }
+    loadOilPrices();
+  </script>
+</body>
+
+</html>
