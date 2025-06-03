@@ -1,19 +1,34 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="中油歷史油價查詢，提供台灣中油公司歷年油價資訊，支援自動刷新、日期格式切換、響應式設計。">
+  <meta name="keywords" content="中油, 油價, 歷史油價, 台灣, 查詢, 汽油, 柴油, 油價查詢">
+  <meta name="author" content="中油油價查詢系統">
   <title>中油歷史油價查詢</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f7f7f7;
+      background: #e3eaf2;
+      color: #181c22;
       margin: 0;
       padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.night-mode {
+      background: #181c22;
+      color: #e3eaf2;
     }
     h1 {
       text-align: center;
       margin-top: 30px;
-      color: #2c3e50;
+      color: #183153;
+      transition: color 0.3s;
+    }
+    body.night-mode h1 {
+      color: #e3eaf2;
     }
     #refreshBtn {
       display: block;
@@ -32,8 +47,12 @@
     }
     #status {
       text-align: center;
-      color: #888;
+      color: #444;
       margin-bottom: 10px;
+      transition: color 0.3s;
+    }
+    body.night-mode #status {
+      color: #bfc9d1;
     }
     #oilTable {
       margin: 0 auto;
@@ -41,34 +60,151 @@
       width: 90%;
       background: #fff;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.3s;
+    }
+    body.night-mode #oilTable {
+      background: #232a36;
     }
     #oilTable th, #oilTable td {
-      border: 1px solid #e1e1e1;
+      border: 1px solid #183153;
       padding: 10px 8px;
       text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.night-mode #oilTable th, body.night-mode #oilTable td {
+      border-color: #3a4660;
+      color: #e3eaf2;
     }
     #oilTable th {
-      background: #2980b9;
+      background: #183153;
       color: #fff;
       font-weight: bold;
     }
+    body.night-mode #oilTable th {
+      background: #3a4660;
+      color: #e3eaf2;
+    }
     #oilTable tr:nth-child(even) {
-      background: #f2f8fc;
+      background: #e6eef7;
+    }
+    body.night-mode #oilTable tr:nth-child(even) {
+      background: #232a36;
     }
     #oilTable tr:hover {
-      background: #eaf6ff;
+      background: #c7e0fa;
+    }
+    body.night-mode #oilTable tr:hover {
+      background: #2d3647;
+    }
+    @media (max-width: 600px) {
+      #oilTable, #oilTable thead, #oilTable tbody, #oilTable th, #oilTable td, #oilTable tr {
+        display: block;
+        width: 100%;
+      }
+      #oilTable thead tr {
+        display: none;
+      }
+      #oilTable tr {
+        margin-bottom: 15px;
+        border: 1px solid #183153;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      }
+      body.night-mode #oilTable tr {
+        border-color: #3a4660;
+      }
+      #oilTable td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #183153;
+      }
+      body.night-mode #oilTable td {
+        border-bottom: 1px solid #3a4660;
+      }
+      #oilTable td:before {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        width: 45%;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        content: attr(data-label);
+        color: #183153;
+      }
+      body.night-mode #oilTable td:before {
+        color: #bfc9d1;
+      }
+    }
+    #toggleNight {
+      margin-left: 16px;
+      font-size: 15px;
+      padding: 5px 22px 5px 16px;
+      border-radius: 6px;
+      border: 1.5px solid #3498db;
+      background: linear-gradient(90deg, #3498db 0%, #217dbb 100%);
+      color: #fff;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(52,152,219,0.08);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+    }
+    #toggleNight svg {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #toggleNight:focus {
+      box-shadow: 0 0 0 3px #a3d3fa;
+      outline: none;
+    }
+    #toggleNight:hover {
+      background: linear-gradient(90deg, #217dbb 0%, #3498db 100%);
+      border: 1.5px solid #217dbb;
+    }
+    body.night-mode #toggleNight {
+      background: linear-gradient(90deg, #232a36 0%, #3a4660 100%);
+      color: #ffe066;
+      border: 1.5px solid #ffe066;
+    }
+    body.night-mode #toggleNight:hover {
+      background: linear-gradient(90deg, #3a4660 0%, #232a36 100%);
+      border: 1.5px solid #ffe066;
+    }
+    body.night-mode #toggleNight svg {
+      color: #ffe066;
     }
   </style>
 </head>
 
 <body>
   <h1>中油歷史油價查詢</h1>
-  <button id="refreshBtn">手動刷新油價</button>
+  <div style="text-align:center;margin-bottom:10px;">
+    <label for="dateType" style="font-size:15px;color:#2c3e50;margin-right:6px;">日期格式：</label>
+    <select id="dateType" style="font-size:15px;padding:3px 10px;border-radius:4px;border:1px solid #bfc9d1;background:#f7faff;outline:none;cursor:pointer;">
+      <option value="roc">民國</option>
+      <option value="ad">西元</option>
+    </select>
+    <button id="toggleNight" type="button">
+      <span id="nightIcon" style="display:inline-block;vertical-align:middle;">
+        <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/></svg>
+        <svg id="iconSun" style="display:none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 6.95l-1.41-1.41M6.34 6.34L4.93 4.93m12.02 0l-1.41 1.41M6.34 17.66l-1.41 1.41"/></svg>
+      </span>
+      <span id="nightText">夜間模式</span>
+    </button>
+  </div>
+  <p id="lastUpdate" style="text-align:center;color:#888;font-size:14px;"></p>
   <p id="status"></p>
-  <table id="oilTable" border="1" style="margin-top:20px; display:none;">
+  <table id="oilTable" border="1" style="margin-top:20px; display:none;" aria-label="油價查詢表格">
     <thead>
       <tr>
-        <th id="dateHeader" style="cursor:pointer;">調價日期 <span id="sortIcon">▼</span></th>
+        <th id="dateHeader" style="cursor:pointer;" tabindex="0" aria-label="調價日期，點擊可排序">調價日期 <span id="sortIcon">▼</span></th>
         <th>92 無鉛汽油</th>
         <th>95 無鉛汽油</th>
         <th>98 無鉛汽油</th>
@@ -77,50 +213,19 @@
     </thead>
     <tbody></tbody>
   </table>
+  <script src="/javascripts/main.js"></script>
   <script>
-    let oilData = [];
-    let sortDesc = true;
-    function sortByDate() {
-      oilData.sort((a, b) => {
-        // 將民國年轉西元年排序
-        const toAD = s => {
-          const [y, m, d] = s.split('/').map(Number);
-          return new Date(y + 1911, m - 1, d);
-        };
-        return sortDesc ? toAD(b.date) - toAD(a.date) : toAD(a.date) - toAD(b.date);
-      });
-    }
-    function renderTable() {
-      const tbody = document.querySelector('#oilTable tbody');
-      tbody.innerHTML = '';
-      oilData.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${row.date}</td><td>${row.oil92}</td><td>${row.oil95}</td><td>${row.oil98}</td><td>${row.diesel}</td>`;
-        tbody.appendChild(tr);
-      });
-      document.getElementById('oilTable').style.display = oilData.length ? '' : 'none';
-    }
-    async function loadOilPrices() {
-      document.getElementById('status').textContent = '載入中...';
-      const res = await fetch('/api/oil-prices');
-      oilData = await res.json();
-      sortByDate();
-      renderTable();
-      document.getElementById('status').textContent = oilData.length ? '' : '查無資料';
-    }
-    document.getElementById('refreshBtn').onclick = async function() {
-      document.getElementById('status').textContent = '刷新中...';
-      await fetch('/api/oil-prices/refresh', { method: 'POST' });
-      await loadOilPrices();
-      document.getElementById('status').textContent = '刷新完成';
+    const toggleNightBtn = document.getElementById('toggleNight');
+    const iconMoon = document.getElementById('iconMoon');
+    const iconSun = document.getElementById('iconSun');
+    const nightText = document.getElementById('nightText');
+    toggleNightBtn.onclick = function() {
+      document.body.classList.toggle('night-mode');
+      const isNight = document.body.classList.contains('night-mode');
+      iconMoon.style.display = isNight ? 'none' : '';
+      iconSun.style.display = isNight ? '' : 'none';
+      nightText.textContent = isNight ? '日間模式' : '夜間模式';
     };
-    document.getElementById('dateHeader').onclick = function() {
-      sortDesc = !sortDesc;
-      document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲';
-      sortByDate();
-      renderTable();
-    };
-    loadOilPrices();
   </script>
 </body>
 </html>
