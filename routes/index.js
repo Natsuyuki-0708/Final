@@ -11,7 +11,10 @@ router.get('/', function(req, res, next) {
 router.get('/api/oil-prices', function(req, res) {
   db.all('SELECT * FROM prices ORDER BY date DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    db.get('SELECT MAX(date) AS lastUpdateTime FROM prices', [], (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ prices: rows, lastUpdateTime: row.lastUpdateTime });
+    });
   });
 });
 

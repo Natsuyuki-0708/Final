@@ -47,20 +47,19 @@ async function loadOilPrices() {
   document.getElementById('status').textContent = '載入中...';
   try {
     const res = await fetch('/api/oil-prices');
-    oilData = await res.json();
+    const data = await res.json();
+    oilData = data.prices;
     sortByDate();
     renderTable();
     document.getElementById('status').textContent = oilData.length ? '' : '查無資料';
-    updateLastUpdateTime();
+    updateLastUpdateTime(data.lastUpdateTime);
   } catch (e) {
     document.getElementById('status').textContent = '資料載入失敗';
   }
 }
 
-function updateLastUpdateTime() {
-  const now = new Date();
-  const pad = n => n.toString().padStart(2, '0');
-  const timeStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+function updateLastUpdateTime(lastUpdateTime) {
+  const timeStr = lastUpdateTime;
   document.getElementById('lastUpdate').textContent = `最後更新時間：${timeStr}`;
 }
 
